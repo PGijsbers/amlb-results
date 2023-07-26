@@ -22,14 +22,15 @@ root
  |
  `-- notebooks
       |-- raw_to_clean.ipynb   Generates root/data/amlb_all.csv
-      |-- visualization.ipynb  Generated plots in root/figures
+      |-- critical_difference.ipynb  Generates CD plots in root/figures
+      |-- visualization.ipynb  Generates other in root/figures
       |-- data_processing.py   Data processing helpers used in visualization.ipynb
       `__ visualization.py     Visualization helpers used in visualization.ipynb
 
 ```
 
 ## Installation
-The following setup is tested on a M1 Mac with Python 3.9. Setup a virtual environment:
+The following setup is tested on a M1 Mac with Python **3.9**. Setup a virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -40,7 +41,7 @@ python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
 python -m pip install "Orange3==3.30.0" --no-deps
 ```
-*note:* newer versions of `Orange3` do not have critical difference plots, but `3.30.0` doesn't seem to install well out of the box. Hence the workaround above.
+*note:* newer versions of `Orange3` do not have critical difference plots, but `3.30.0` doesn't seem to install well out of the box. Hence the workaround above. It works for `Python 3.9` but fails for `Python 3.11`.
 
 starting the jupyter server:
 ```bash
