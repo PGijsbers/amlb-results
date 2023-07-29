@@ -3,6 +3,15 @@ import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare
 
+def is_old(framework: str, constraint: str, metric: str) -> bool:
+    """Encodes the table in `raw_to_clean.ipynb`"""
+    if constraint == "1h8c_gp3":
+        return False
+    if framework in ["autosklearn2", "GAMA(B)", "TPOT"]:
+        return True
+    return framework == "MLJAR(B)" and metric != "neg_rmse"
+    
+
 def get_print_friendly_name(name: str, extras: dict[str, str] = None) -> str:
     if extras is None:
         extras = {}
