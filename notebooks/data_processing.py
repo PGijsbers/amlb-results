@@ -5,6 +5,8 @@ from scipy.stats import friedmanchisquare
 
 def is_old(framework: str, constraint: str, metric: str) -> bool:
     """Encodes the table in `raw_to_clean.ipynb`"""
+    if framework == "TunedRandomForest":
+        return True
     if constraint == "1h8c_gp3":
         return False
     if framework in ["autosklearn2", "GAMA(B)", "TPOT"]:
