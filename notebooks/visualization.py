@@ -15,5 +15,5 @@ FRAMEWORK_TO_COLOR = {
     "MLJAR(P)": '#ddb2fd',
     "RandomForest": "#e20134",
     "TPOT": '#9f0162',
-    "TunedRandomForest": '#a40122',
+    "TunedRandomForest": '#c4a484',
 }
