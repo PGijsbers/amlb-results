@@ -34,11 +34,13 @@ def get_print_friendly_name(name: str, extras: dict[str, str] = None) -> str:
     return print_friendly_names.get(name, name)
 
 
-def impute_missing_results(results: pd.DataFrame, with_results_from: str = "constantpredictor") -> pd.DataFrame:
+def impute_missing_results(results: pd.DataFrame, with_results_from: str = "constantpredictor", with_indicator: bool = True) -> pd.DataFrame:
     """Imputes missing values in `results` with the corresponding score from `constantpredictor`"""
     if with_results_from not in results["framework"].unique():
         raise ValueError(f"{with_results_from=} is not in `results`")
     results = results.copy()
+    if with_indicator:
+        results["imputed"] = False
         
     lookup_table = results.set_index(["framework", "task", "fold", "constraint"])
     rows_with_missing_result = ((index, row) for index, row in results.iterrows() if np.isnan(row["result"]))
@@ -46,6 +48,8 @@ def impute_missing_results(results: pd.DataFrame, with_results_from: str = "cons
         task, fold, constraint = row[["task", "fold", "constraint"]]
         value = lookup_table.loc[(with_results_from, task, fold, constraint)].result
         results.loc[index, "result"] = value
+        if with_indicator:
+            results.loc[index, "imputed"] = True
     return results
 
 def calculate_ranks(results: pd.DataFrame) -> dict[str, float]:
@@ -66,6 +70,9 @@ def calculate_ranks(results: pd.DataFrame) -> dict[str, float]:
 
 def add_rescale(data: pd.DataFrame, lower: str) -> pd.DataFrame:
     """Adds a `scaled` column to data scaling between -1 (lower) and 0 (best observed)."""
+    if "constraint" not in data:
+        data["constraint"] = "unknown"
+    
     lookup = data.set_index(["framework", "task", "constraint"]).sort_index()
     oracle = data.groupby(["task", "constraint"]).max().sort_index()
     
@@ -78,6 +85,7 @@ def add_rescale(data: pd.DataFrame, lower: str) -> pd.DataFrame:
         else:
             v = -((row["result"] - lb) / (ub - lb)) + 1
             data.loc[index, "scaled"] = v
+
     return data
             
     
