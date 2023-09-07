@@ -34,22 +34,33 @@ def get_print_friendly_name(name: str, extras: dict[str, str] = None) -> str:
     return print_friendly_names.get(name, name)
 
 
-def impute_missing_results(results: pd.DataFrame, with_results_from: str = "constantpredictor", with_indicator: bool = True) -> pd.DataFrame:
-    """Imputes missing values in `results` with the corresponding score from `constantpredictor`"""
-    if with_results_from not in results["framework"].unique():
-        raise ValueError(f"{with_results_from=} is not in `results`")
+def impute_results(results: pd.DataFrame, where: pd.Series, with_: str = "constantpredictor", indicator_column: str = "imputed") -> pd.DataFrame:
+    """Impute result column of `results`, `where_` a condition holds true, `with_` the result of another framework.
+
+    results: pd.DataFrame
+      Regular AMLB results dataframe, must have columns "framework", "task", "fold", "constraint", and "result".
+    where: pd.Series
+      A logical index into `results` that defines the row where "result" should be imputed.
+    with_: str
+      The name of the "framework" which should be used to determine the value to impute with.
+    indicator_column: str, optional
+      The name of the column where a boolean will mark whether or not the "result" value of the row was imputed.
+    
+    Returns a copy of the original dataframe with imputed results.
+    """
+    if with_ not in results["framework"].unique():
+        raise ValueError(f"{with_=} is not in `results`")
     results = results.copy()
-    if with_indicator:
-        results["imputed"] = False
+    
+    if indicator_column and indicator_column not in results.columns:
+        results[indicator_column] = False
         
     lookup_table = results.set_index(["framework", "task", "fold", "constraint"])
-    rows_with_missing_result = ((index, row) for index, row in results.iterrows() if np.isnan(row["result"]))
-    for index, row in rows_with_missing_result:
+    for index, row in results[where].iterrows():
         task, fold, constraint = row[["task", "fold", "constraint"]]
-        value = lookup_table.loc[(with_results_from, task, fold, constraint)].result
-        results.loc[index, "result"] = value
-        if with_indicator:
-            results.loc[index, "imputed"] = True
+        results.loc[index, "result"] = lookup_table.loc[(with_, task, fold, constraint)].result 
+        if indicator_column:
+            results.loc[index, indicator_column] = True
     return results
 
 def calculate_ranks(results: pd.DataFrame) -> dict[str, float]:
